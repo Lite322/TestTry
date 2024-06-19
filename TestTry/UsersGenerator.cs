@@ -8,20 +8,34 @@ namespace TestTry
 {
     public class UsersGenerator
     {
-        public static List<string> Add(string pref, string dbpref, int count, int lenghtpass, string cs)
+        public static List<User> Add(string pref, string dbpref, int count, int lenghtpass, string cs)
         {
 
             try
             {
-                List<string> list = new List<string>();
-                for (int i = 0; i <= count; i++)
+                List<User> list = new List<User>();
+                for (int i = 1; i <= count; i++)
                 {
                     string us = pref + i;
                     string pass = GetPass(lenghtpass);
                     string db = dbpref + i;
 
-                    ServiceSQL
+                    ServiceSQL.CreateDataBase(db, cs); // создание дб
+                    ServiceSQL.CreateUser(us, db, pass, cs); // создание юзеров
+
+                    list.Add(new User
+                    {
+                        Name = us,
+                        Login = us,
+                        Password = pass,
+                        NameDB = db
+                    });
                 }
+                return list;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
             }
 
             
