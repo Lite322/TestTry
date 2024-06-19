@@ -198,7 +198,7 @@ namespace TestTry
 
             string logins = "";
 
-            var script = "use [asd1]\r\n " +
+            var script = "use [T2M1]\r\n " +
                          "select name as username,\r\n " +
                          "create_date,\r\n " +
                          "modify_date,\r\n " +

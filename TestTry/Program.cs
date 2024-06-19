@@ -5,12 +5,14 @@ while(true)
     try
     {
         Console.WriteLine("Выберите задачу:");
-        Console.WriteLine("1) Создать пользователей и их базы данных \n2) Создать базу данных с таблицей User с пользователями \n3) Сделать бэкап \n4) Получить логины \n5) Сделать всё");
+        Console.WriteLine("1) Создать пользователей и их базы данных \n2) Создать базу данных с таблицей User с пользователями \n3) Сделать бэкап \n4) Получить логины (не работает) \n5) Сделать всё");
+        
+        List<User> users = new List<User>();
 
-        switch(Console.ReadLine())
+        switch (Console.ReadLine())
         {
-            case "1": AddUsers(); Console.WriteLine(); break;
-            case "2": Metod(); Console.WriteLine(); break;
+            case "1": AddUsers(users); Console.WriteLine(); break;
+            case "2": Metod(users); Console.WriteLine(); break;
             case "3": BackUp(); Console.WriteLine(); break;
             case "4": Logins(); Console.WriteLine(); break;
             case "5": DoAll(); Console.WriteLine(); break;
@@ -23,7 +25,7 @@ while(true)
         continue;
     }
 }
-void AddUsers()
+void AddUsers(List<User> users)
 {
     string cs = GetConnectingString();
 
@@ -40,53 +42,52 @@ void AddUsers()
     int leghtpass = Convert.ToInt32(Console.ReadLine());
 
 
-    var list = UsersGenerator.Add(pref, dbpref, count, leghtpass, cs);
+    users = UsersGenerator.Add(pref, dbpref, count, leghtpass, cs);
     Console.WriteLine("Результат:");
 
-    foreach (var item in list)
+    foreach (var item in users)
         Console.WriteLine($"Пользователь: {item.Name}, База данных: {item.NameDB}, Пароль: {item.Password}");
     Console.WriteLine("_____________END_____________");
 }
 
-void Metod()
+void Metod(List<User> users)
 {
-    string cs = GetConnectingString();
-
-    Console.WriteLine("Укажите название создаваемой БД");
-    string db_name = Console.ReadLine();
-
-    try
+    if (users.Count > 0)
     {
-        ServiceSQL.CreateDataBase(db_name, cs);
-    }
-    catch (Exception ex) 
-    {
-        Console.WriteLine("Такая база уже есть. Таблица будет создана в ней.");
-    }
+        string cs = GetConnectingString();
 
-    try
-    {
-        ServiceSQL.CreateTableUser(db_name, cs);
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("Таблица User уже есть в это базе. Данные будут добавлены в неё.");
-    }
+        Console.WriteLine("Укажите название создаваемой БД");
+        string db_name = Console.ReadLine();
 
-
-    for(int i = 1; i <= 10;  i++)
-    {
-        ServiceSQL.AddUsersForTableUser(db_name, cs, new User()
+        try
         {
-            Login = "Login" + i,
-            Name = "User" + i,
-            Password = UsersGenerator.GetPass(5)
-        });
-    }
-    Console.WriteLine($"Создано 10 пользователей в базе данных {db_name}");
+            ServiceSQL.CreateDataBase(db_name, cs);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Такая база уже есть. Таблица будет создана в ней.");
+        }
 
-    foreach(var s in ServiceSQL.GetUsers(db_name, cs))
-        Console.WriteLine(s);
+        try
+        {
+            ServiceSQL.CreateTableUser(db_name, cs);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Таблица User уже есть в это базе. Данные будут добавлены в неё.");
+        }
+
+
+        for (int i = 0; i < users.Count; i++)
+        {
+            ServiceSQL.AddUsersForTableUser(db_name, cs, users[i]);
+        }
+        Console.WriteLine($"Создано 10 пользователей в базе данных {db_name}");
+
+        foreach (var s in ServiceSQL.GetUsers(db_name, cs))
+            Console.WriteLine(s);
+    }
+    Console.WriteLine("Вы не создали новых пользователей. Воспользуйтесь первой командой.");
 }
 
 void BackUp()
@@ -184,5 +185,5 @@ string GetConnectingString()
     //string password = Console.ReadLine();
 
     //return $"server = {server}; user id = {login}; password = {password}; trustservercertificate = true";
-    return $"server = localhost; user id = sa; password = Db_05; trustservercertificate = true";
+    return $"server = localhost; user id = sa; password = Db_05; trustservercertificate = true"; 
 }
