@@ -1,21 +1,24 @@
 ﻿using TestTry;
 
-while(true)
+ListUsers users = new ListUsers();
+
+while (true)
 {
     try
     {
         Console.WriteLine("Выберите задачу:");
         Console.WriteLine("1) Создать пользователей и их базы данных \n2) Создать базу данных с таблицей User с пользователями \n3) Сделать бэкап \n4) Получить логины (не работает) \n5) Сделать всё");
         
-        List<User> users = new List<User>();
+        
 
         switch (Console.ReadLine())
         {
-            case "1": AddUsers(users); Console.WriteLine(); break;
+            case "1": users.Users = AddUsers(); Console.WriteLine(); break;
             case "2": Metod(users); Console.WriteLine(); break;
             case "3": BackUp(); Console.WriteLine(); break;
             case "4": Logins(); Console.WriteLine(); break;
             case "5": DoAll(); Console.WriteLine(); break;
+            case "6": RestoreDB(); Console.WriteLine(); break;
             default: Console.WriteLine("Неизвестная команда"); Console.WriteLine(); break;
         }
     }
@@ -25,7 +28,7 @@ while(true)
         continue;
     }
 }
-void AddUsers(List<User> users)
+List<User> AddUsers()
 {
     string cs = GetConnectingString();
 
@@ -41,18 +44,19 @@ void AddUsers(List<User> users)
     Console.WriteLine("Введите длину пароля");
     int leghtpass = Convert.ToInt32(Console.ReadLine());
 
-
-    users = UsersGenerator.Add(pref, dbpref, count, leghtpass, cs);
+    
+    List<User> users = UsersGenerator.Add(pref, dbpref, count, leghtpass, cs);
     Console.WriteLine("Результат:");
 
     foreach (var item in users)
         Console.WriteLine($"Пользователь: {item.Name}, База данных: {item.NameDB}, Пароль: {item.Password}");
     Console.WriteLine("_____________END_____________");
+    return users;
 }
 
-void Metod(List<User> users)
+void Metod(ListUsers users)
 {
-    if (users.Count > 0)
+    if (users.Users.Count > 0)
     {
         string cs = GetConnectingString();
 
@@ -78,11 +82,11 @@ void Metod(List<User> users)
         }
 
 
-        for (int i = 0; i < users.Count; i++)
+        for (int i = 0; i < users.Users.Count; i++)
         {
-            ServiceSQL.AddUsersForTableUser(db_name, cs, users[i]);
+            ServiceSQL.AddUsersForTableUser(db_name, cs, users.Users[i]);
         }
-        Console.WriteLine($"Создано 10 пользователей в базе данных {db_name}");
+        Console.WriteLine($"Создано {users.Users.Count} пользователей в базе данных {db_name}");
 
         foreach (var s in ServiceSQL.GetUsers(db_name, cs))
             Console.WriteLine(s);
@@ -171,6 +175,21 @@ void DoAll()
     Console.WriteLine("Введите директорию, где будет создан файл бэкапа");
     string dir = Console.ReadLine();
     Console.WriteLine(ServiceSQL.BackUpDateBase(db_name, dir, cs));
+}
+
+void RestoreDB()
+{
+    string cs = GetConnectingString();
+
+    Console.WriteLine("Введите назвение базы даных, которую хотите восстановить");
+
+    var db_name = Console.ReadLine();
+
+    Console.WriteLine("Введите путь к файлу бэкапа");
+
+    var path = Console.ReadLine();
+
+    Console.WriteLine(ServiceSQL.RestoreDataBase(db_name, path, cs));
 }
 
 string GetConnectingString()

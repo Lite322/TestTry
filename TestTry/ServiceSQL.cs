@@ -80,7 +80,7 @@ namespace TestTry
             {
                 connection.Open();
                 sqlCommand.ExecuteNonQuery();
-                return $@"Backup сщздался в директории -> {dir} -> название файла -> {nameFile}";
+                return $@"Backup создался в директории -> {dir} -> название файла -> {nameFile}";
             }
             catch (Exception ex)
             {
@@ -89,6 +89,33 @@ namespace TestTry
             finally
             {
                 if (connection.State == System.Data.ConnectionState.Open)
+                {
+                    connection.Close();
+                }
+            }
+        }
+
+        public static string RestoreDataBase(string db_name, string path,  string cs)
+        {
+            SqlConnection connection = new SqlConnection(cs);
+
+            var script = $@"RESTORE DATABASE [{db_name}] FROM  DISK = N'{path}' WITH  FILE = 1,  NOUNLOAD,  STATS = 5";
+
+            SqlCommand sqlCommand = new SqlCommand(script, connection);
+
+            try
+            {
+                connection.Open();
+                sqlCommand.ExecuteNonQuery();
+                return $"База даных {db_name} восстановлена.";
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            finally
+            {
+                if(connection.State == System.Data.ConnectionState.Open)
                 {
                     connection.Close();
                 }
